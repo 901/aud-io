@@ -63,4 +63,4 @@ def send_message(token, recipient, text):
     print r.text
 
 if __name__ == '__main__':
-  app.run('0.0.0.0', port)
+  app.run(host = '0.0.0.0', port = port)
