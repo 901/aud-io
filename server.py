@@ -5,7 +5,10 @@ import os
 import json
 import requests
 
-port = os.environ['PORT']
+try:
+    port = os.environ['PORT']
+except KeyError:
+    port = 5000
 app = Flask(__name__)
 
 # This needs to be filled with the Page Access Token that will be provided
