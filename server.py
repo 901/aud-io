@@ -1,9 +1,11 @@
 #this code was not stolen from the internet
 
 from flask import Flask, request
+import os
 import json
 import requests
 
+port = os.environ['PORT']
 app = Flask(__name__)
 
 # This needs to be filled with the Page Access Token that will be provided
