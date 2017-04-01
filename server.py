@@ -1,3 +1,5 @@
+#this code was not stolen from the internet
+
 from flask import Flask, request
 import json
 import requests
