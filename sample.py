@@ -41,9 +41,10 @@ def webhook():
         abort(400)
 
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
     if WEBHOOK_VERIFY_TOKEN is None:
         print('WEBHOOK_VERIFY_TOKEN has not been set in the environment.\nGenerating random token...')
         token = temp_token()
         print('Token: %s' % token)
         WEBHOOK_VERIFY_TOKEN = token
-    app.run()
+    app.run(host='0.0.0.0', port=port)
