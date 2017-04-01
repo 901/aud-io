@@ -8,6 +8,7 @@ def temp_token():
     return temp_token.decode('utf-8')
 
 WEBHOOK_VERIFY_TOKEN = os.getenv('WEBHOOK_VERIFY_TOKEN')
+port = os.getenv('PORT')
 CLIENT_AUTH_TIMEOUT = 24 # in Hours
 
 app = Flask(__name__)
@@ -41,7 +42,7 @@ def webhook():
         abort(400)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT"))
     if WEBHOOK_VERIFY_TOKEN is None:
         print('WEBHOOK_VERIFY_TOKEN has not been set in the environment.\nGenerating random token...')
         token = temp_token()
