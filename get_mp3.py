@@ -54,7 +54,7 @@ class GetFileNameLogger():
         wds = msg.split(' ')
         if wds[0] == "[ffmpeg]" and wds[1] == "Destination:":
             self.file = wds[2]
-        print("Youtube-dl::DEBUG", msg)
+            print("File downloaded")
     def warning(self, msg):
         pass
     def error(self, msg):
@@ -108,7 +108,9 @@ def get_lyrics(link):
     return from_after_to_str(html, '<p class="songtext" lang="EN">', "</p>").replace("<br />", "").replace("\n", "")
 
 def truncate_mp3(file, lyrics, query):
-    TOLERANCE = 500
+    INTRO_FUDGE = 5*1000
+    END_FUDGE = 1000
+    MIN_INTERVAL = 5000
     idx = -1
     match_len = 0
     for i in range(len(query), 1, -1):
@@ -120,10 +122,12 @@ def truncate_mp3(file, lyrics, query):
         return False
     else:
         audio = AudioSegment.from_mp3(file)
-        start_ms = len(audio) * idx / len(lyrics)
-        duration = len(audio) * match_len / len(lyrics) + TOLERANCE
+        start_ms = len(audio) * idx / len(lyrics) + INTRO_FUDGE
+        duration = max(MIN_INTERVAL, len(audio) * match_len / len(lyrics) + END_FUDGE)
+        end_ms = start_ms + duration
+        print("Guessed interval:", start_ms, end_ms)
         with open(file, 'wb') as out:
-            audio[start_ms:start_ms + duration].export(out, format='mp3')
+            audio[start_ms:end_ms].export(out, format='mp3')
         return True
 
 def get_mp3_from_lyrics(lyrics):
@@ -143,4 +147,4 @@ def get_mp3_from_lyrics(lyrics):
         return ret, -1
     return ret, 0
 
-print(get_mp3_from_lyrics("with love from me to you"))
+print(get_mp3_from_lyrics("don't stop me now I'm having a good time"))
