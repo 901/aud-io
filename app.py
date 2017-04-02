@@ -14,7 +14,7 @@ app = Flask(__name__)
 # This needs to be filled with the Page Access Token that will be provided
 # by the Facebook App that will be created.
 PAT = ''
-print port
+
 @app.route('/', methods=['GET'])
 def handle_verification():
   print "Handling Verification."
@@ -63,4 +63,5 @@ def send_message(token, recipient, text):
     print r.text
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=port)
+    print port
+    app.run(host='0.0.0.0', port=port)
