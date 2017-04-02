@@ -21,13 +21,12 @@ with open("pat.txt", 'r') as f:
     PAT = tokens[0]
     #print PAT
     verify = tokens[1]
-    print verify
+    #print verify
 
 
 @app.route('/', methods=['GET'])
 def handle_verification():
   print "Handling Verification."
-  print request.args.get('hub.verify_token', '')
   if request.args.get('hub.verify_token', '') == verify:
     print "Verification successful!"
     return request.args.get('hub.challenge', '')
@@ -46,7 +45,7 @@ def handle_messages():
     if errno < -1:
         send_message(PAT, sender, path)
     else:
-        send_attachmet(PAT, sender, path)
+        send_attachment(PAT, sender, path)
   return "ok"
 
 def messaging_events(payload):
