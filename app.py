@@ -21,7 +21,7 @@ with open("pat.txt", 'r') as f:
     PAT = tokens[0]
     #print PAT
     verify = tokens[1]
-    #print verify
+    print verify
 
 
 @app.route('/', methods=['GET'])
