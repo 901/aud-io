@@ -1,10 +1,11 @@
 #memes memes memes memes
 #this code was not stolen from the internet
 
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 import os
 import json
 import requests
+from get_mp3 import get_mp3_from_lyrics
 
 try:
     port = int(os.environ.get('PORT', 5000))
@@ -40,7 +41,11 @@ def handle_messages():
   print payload
   for sender, message in messaging_events(payload):
     print "Incoming from %s: %s" % (sender, message)
-    send_message(PAT, sender, message)
+    path, errno = get_mp3_from_lyrics(message)
+    if errno < -1:
+        send_message(PAT, sender, path)
+    else:
+        send_attachmet(PAT, sender, path)
   return "ok"
 
 def messaging_events(payload):
@@ -69,6 +74,27 @@ def send_message(token, recipient, text):
     headers={'Content-type': 'application/json'})
   if r.status_code != requests.codes.ok:
     print r.text
+
+def send_attachment(token, recipient, path):
+  """Send the message text to recipient with id recipient.
+  """
+
+  r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+    params={"access_token": token},
+    data=json.dumps({
+      "recipient": {"id": recipient},
+      "message": {"attachment": {"type": "audio",
+          "payload": {
+              "url": "https://blueberry-cake-16125.herokuapp.com/" + path
+           }}}
+    }),
+    headers={'Content-type': 'application/json'})
+  if r.status_code != requests.codes.ok:
+    print r.text
+
+@app.route("/downloads/<path:path>")
+def req_for_mp3(path):
+    return send_from_directory("downloads", path)
 
 if __name__ == '__main__':
     print port

@@ -10,10 +10,10 @@ if sys.version_info[0] == 2:
 else:
     from urllib.parse import quote_plus
 
+ctr = 0
 def provide_counter(fn):
-    ctr = 0
     def f(*args):
-        nonlocal ctr
+        global ctr
         ctr = ctr + 1
         return fn(*(args + (ctr - 1,)))
     return f
