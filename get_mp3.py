@@ -146,5 +146,3 @@ def get_mp3_from_lyrics(lyrics):
     if not truncate_mp3(ret, get_lyrics(link).lower(), lyrics.lower()):
         return ret, -1
     return ret, 0
-
-print(get_mp3_from_lyrics("don't stop me now I'm having a good time"))

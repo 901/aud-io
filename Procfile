@@ -1,1 +1,1 @@
-web: python app.py
+web: mkdir downloads && python app.py
