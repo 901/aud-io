@@ -52,7 +52,7 @@ class GetFileNameLogger():
         self.file = ""
     def debug(self, msg):
         wds = msg.split(' ')
-        if wds[0] == "[ffmpeg]" and wds[1] == "Destination:":
+        if wds[0] and wds[1] == "Destination:":
             self.file = wds[2]
             print("File downloaded")
     def warning(self, msg):
