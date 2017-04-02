@@ -31,11 +31,12 @@ def get_song_for(query):
         html = resp.text#.encode('ascii')
         song_title_a = from_after_to_str(html, '<td class="ft">', "</td>")
         song_title = from_after_to_str(song_title_a, '>', '<')
+        song_link = from_after_to_str(song_title_a, 'href="', '"')
         song_artist_a = from_after_to_str(html, '<td class="fa">', "</td>")
         song_artist = from_after_to_str(song_artist_a, '>', '<')
-        return song_artist, song_title
+        return song_artist, song_title, "http://www.mldb.org/" + song_link
     else:
-        return None, None
+        return None, None, None
 
 class GetFileNameLogger():
     def __init__(self):
@@ -63,6 +64,9 @@ def get_video(url):
                     'preferredquality':'192'
                 }],
             "outtmpl": "downloads/curr_video",
+            "allsubtitles": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
             "forcefilename": True,
             "logger": gfnl,
             "default_search": "http://www.youtube.com/results?q=",
@@ -74,9 +78,9 @@ def get_video(url):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
-        except youtube_dl.MaxDownloadsReached as mdr:
+        except:
             pass
-        return gfnl.file
+    return gfnl.file
 
 #def get_url_by_song(artist, title):
 #    resp = query_url("http://www.youtube.com/results", {'q': ' '.join([artist, title])})
@@ -89,8 +93,12 @@ def get_video(url):
 #        return first_result_url
 #    print("RIP, youtube:", resp.status)
 
+def get_lyrics(link):
+    html = requests.get(link).text
+    return from_after_to_str(html, '<p class="songtext" lang="EN">', "</p>").replace("<br />", "").replace("\n", " ")
+
 def get_mp3_from_lyrics(lyrics):
-    artist, title = get_song_for(lyrics)
+    artist, title, link = get_song_for(lyrics)
     if artist is None:
         return "No song"
     print(artist, title)
@@ -99,6 +107,8 @@ def get_mp3_from_lyrics(lyrics):
 #        return "No URL"
 #    return get_video(url)
     print(quote_plus(' '.join([artist, title])))
-    return get_video(quote_plus(' '.join([artist, title])))
+    ret = get_video(quote_plus(' '.join([artist, title])))
+    print(get_lyrics(link))
+    return ret
 
-print(get_mp3_from_lyrics("hello darkness my old friend"))
+print(get_mp3_from_lyrics("with love from me to you"))
