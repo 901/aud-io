@@ -16,12 +16,17 @@ app = Flask(__name__)
 # by the Facebook App that will be created.
 
 with open("pat.txt", 'r') as f:
-    PAT = f.read()
+    tokens = f.readlines()
+    PAT = tokens[0]
+    #print PAT
+    verify = tokens[1]
+    #print verify
+
 
 @app.route('/', methods=['GET'])
 def handle_verification():
   print "Handling Verification."
-  if request.args.get('hub.verify_token', '') == 'my_voice_is_my_password_verify_me':
+  if request.args.get('hub.verify_token', '') == verify:
     print "Verification successful!"
     return request.args.get('hub.challenge', '')
   else:
