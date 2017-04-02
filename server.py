@@ -6,7 +6,7 @@ import json
 import requests
 
 try:
-    port = os.environ['PORT']
+    port = int(os.environ.get('PORT', 5000))
 except KeyError:
     port = 5000
 app = Flask(__name__)
@@ -63,4 +63,4 @@ def send_message(token, recipient, text):
     print r.text
 
 if __name__ == '__main__':
-  app.run(host = '0.0.0.0', port = port)
+  app.run(host='0.0.0.0', port=port)
