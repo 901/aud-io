@@ -1,5 +1,6 @@
 import youtube_dl
 import requests
+from pydub import AudioSegment
 #from os import remove
 #import os.path
 
@@ -8,6 +9,14 @@ if sys.version_info[0] == 2:
     from urllib import quote_plus
 else:
     from urllib.parse import quote_plus
+
+def provide_counter(fn):
+    ctr = 0
+    def f(*args):
+        nonlocal ctr
+        ctr = ctr + 1
+        return fn(*(args + (ctr - 1,)))
+    return f
 
 def from_after_to_str(string, from_k, to_k, start=0):
     lep = string.find(from_k, start)
@@ -51,7 +60,8 @@ class GetFileNameLogger():
     def error(self, msg):
         print(msg)
 
-def get_video(url):
+@provide_counter
+def get_video(url, ct):
     gfnl = GetFileNameLogger()
     ydl_opts = {
             "keepvideo": False,
@@ -63,7 +73,7 @@ def get_video(url):
                     'preferredcodec':'mp3',
                     'preferredquality':'192'
                 }],
-            "outtmpl": "downloads/curr_video",
+            "outtmpl": "downloads/video_" + str(ct),
             "allsubtitles": True,
             "writesubtitles": True,
             "writeautomaticsub": True,
@@ -95,12 +105,31 @@ def get_video(url):
 
 def get_lyrics(link):
     html = requests.get(link).text
-    return from_after_to_str(html, '<p class="songtext" lang="EN">', "</p>").replace("<br />", "").replace("\n", " ")
+    return from_after_to_str(html, '<p class="songtext" lang="EN">', "</p>").replace("<br />", "").replace("\n", "")
+
+def truncate_mp3(file, lyrics, query):
+    TOLERANCE = 500
+    idx = -1
+    match_len = 0
+    for i in range(len(query), 1, -1):
+        idx = lyrics.find(query[:i])
+        if idx >= 0:
+            match_len = i
+            break
+    if idx < 0:
+        return False
+    else:
+        audio = AudioSegment.from_mp3(file)
+        start_ms = len(audio) * idx / len(lyrics)
+        duration = len(audio) * match_len / len(lyrics) + TOLERANCE
+        with open(file, 'wb') as out:
+            audio[start_ms:start_ms + duration].export(out, format='mp3')
+        return True
 
 def get_mp3_from_lyrics(lyrics):
     artist, title, link = get_song_for(lyrics)
     if artist is None:
-        return "No song"
+        return "No song", -2
     print(artist, title)
 #    url = get_url_by_song(artist, title)
 #    if url is None:
@@ -108,7 +137,10 @@ def get_mp3_from_lyrics(lyrics):
 #    return get_video(url)
     print(quote_plus(' '.join([artist, title])))
     ret = get_video(quote_plus(' '.join([artist, title])))
-    print(get_lyrics(link))
-    return ret
+    if ret is None:
+        return "Could not find video", -2
+    if not truncate_mp3(ret, get_lyrics(link).lower(), lyrics.lower()):
+        return ret, -1
+    return ret, 0
 
 print(get_mp3_from_lyrics("with love from me to you"))
