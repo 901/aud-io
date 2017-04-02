@@ -27,6 +27,7 @@ with open("pat.txt", 'r') as f:
 @app.route('/', methods=['GET'])
 def handle_verification():
   print "Handling Verification."
+  print request.args.get('hub.verify_token', '')
   if request.args.get('hub.verify_token', '') == verify:
     print "Verification successful!"
     return request.args.get('hub.challenge', '')
