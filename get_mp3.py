@@ -52,9 +52,10 @@ class GetFileNameLogger():
         self.file = ""
     def debug(self, msg):
         wds = msg.split(' ')
-        if wds[0] and wds[1] == "Destination:":
+        if wds[0] == "[ffmpeg]" and wds[1] == "Destination:":
             self.file = wds[2]
             print("File downloaded")
+        print(msg)
     def warning(self, msg):
         pass
     def error(self, msg):
@@ -71,12 +72,12 @@ def get_video(url, ct):
             "postprocessors":[{
                     'key':'FFmpegExtractAudio',
                     'preferredcodec':'mp3',
-                    'preferredquality':'192'
+#                    'preferredquality':'192'
                 }],
             "outtmpl": "downloads/video_" + str(ct),
-            "allsubtitles": True,
-            "writesubtitles": True,
-            "writeautomaticsub": True,
+#            "allsubtitles": True,
+#            "writesubtitles": True,
+#            "writeautomaticsub": True,
             "forcefilename": True,
             "logger": gfnl,
             "default_search": "http://www.youtube.com/results?q=",
@@ -90,7 +91,7 @@ def get_video(url, ct):
             ydl.download([url])
         except:
             pass
-    return gfnl.file
+        return gfnl.file
 
 #def get_url_by_song(artist, title):
 #    resp = query_url("http://www.youtube.com/results", {'q': ' '.join([artist, title])})
@@ -111,6 +112,7 @@ def truncate_mp3(file, lyrics, query):
     INTRO_FUDGE = 5*1000
     END_FUDGE = 1000
     MIN_INTERVAL = 5000
+    START_DAMP = 5
     idx = -1
     match_len = 0
     for i in range(len(query), 1, -1):
@@ -123,11 +125,11 @@ def truncate_mp3(file, lyrics, query):
     else:
         audio = AudioSegment.from_mp3(file)
         start_ms = len(audio) * idx / len(lyrics) + INTRO_FUDGE
-        duration = max(MIN_INTERVAL, len(audio) * match_len / len(lyrics) + END_FUDGE)
+        duration = max(MIN_INTERVAL, (len(audio) * match_len / len(lyrics) + END_FUDGE) * START_DAMP)
         end_ms = start_ms + duration
         print("Guessed interval:", start_ms, end_ms)
         with open(file, 'wb') as out:
-            audio[start_ms:end_ms].export(out, format='mp3')
+            audio[start_ms:end_ms].export(out, format='mp3', parameters=["-q:a", '0'])
         return True
 
 def get_mp3_from_lyrics(lyrics):
@@ -139,10 +141,12 @@ def get_mp3_from_lyrics(lyrics):
 #    if url is None:
 #        return "No URL"
 #    return get_video(url)
-    print(quote_plus(' '.join([artist, title])))
     ret = get_video(quote_plus(' '.join([artist, title])))
     if ret is None:
         return "Could not find video", -2
+    print(ret)
     if not truncate_mp3(ret, get_lyrics(link).lower(), lyrics.lower()):
         return ret, -1
     return ret, 0
+
+#print(get_mp3_from_lyrics("with love from me to you"))
